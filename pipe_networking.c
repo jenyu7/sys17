@@ -12,7 +12,21 @@
   returns the file descriptor for the upstream pipe.
   =========================*/
 int server_setup() {
-  return -1;
+  int from_client;
+
+  char buffer[HANDSHAKE_BUFFER_SIZE];
+
+  mkfifo("waluigi", 0600);
+
+  //block on open, recieve mesage
+  printf("[server] handshake: making wkp\n");
+  from_client = open( "waluigi", O_RDONLY, 0);
+  read(from_client, buffer, sizeof(buffer));
+  printf("[server] handshake: received [%s]\n", buffer);
+
+  remove("waluigi");
+  printf("[server] handshake: removed wkp\n");
+  return from_client;
 }
 
 
@@ -25,7 +39,18 @@ int server_setup() {
   returns the file descriptor for the downstream pipe.
   =========================*/
 int server_connect(int from_client) {
-  return -1;
+  int to_client;
+  char buffer[HANDSHAKE_BUFFER_SIZE];
+  
+   //connect to client, send message
+  to_client = open(buffer, O_WRONLY, 0);
+  write(to_client, buffer, sizeof(buffer));
+
+  //read for client
+  read(from_client, buffer, sizeof(buffer));
+  printf("[server] handshake received: %s\n", buffer);
+
+  return to_client;
 }
 
 /*=========================
@@ -43,15 +68,15 @@ int server_handshake(int *to_client) {
 
   char buffer[HANDSHAKE_BUFFER_SIZE];
 
-  mkfifo("luigi", 0600);
+  mkfifo("waluigi", 0600);
 
   //block on open, recieve mesage
   printf("[server] handshake: making wkp\n");
-  from_client = open( "luigi", O_RDONLY, 0);
+  from_client = open( "waluigi", O_RDONLY, 0);
   read(from_client, buffer, sizeof(buffer));
   printf("[server] handshake: received [%s]\n", buffer);
 
-  remove("luigi");
+  remove("waluigi");
   printf("[server] handshake: removed wkp\n");
 
   //connect to client, send message
@@ -81,7 +106,7 @@ int client_handshake(int *to_server) {
 
   //send pp name to server
   printf("[client] handshake: connecting to wkp\n");
-  *to_server = open( "luigi", O_WRONLY, 0);
+  *to_server = open( "waluigi", O_WRONLY, 0);
   if ( *to_server == -1 )
     exit(1);
 
