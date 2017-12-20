@@ -7,12 +7,13 @@ void subserver(int from_client);
 
 static void sighandler(int signo) {
   if (signo == SIGINT) {
-    remove("luigi");
+    remove("waluigi");
     exit(0);
   }
 }
 
 int main() {
+  signal(SIGINT, sighandler);
   int from_client;
   int parent = getpid();
   while ( 1 ) {
