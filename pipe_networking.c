@@ -14,16 +14,17 @@
 int server_setup() {
   int from_client;
 
-  char buffer[HANDSHAKE_BUFFER_SIZE];
-
   mkfifo("waluigi", 0600);
 
-  //block on open, recieve mesage
+  //block on open, receive message
   printf("[server] handshake: making wkp\n");
   from_client = open( "waluigi", O_RDONLY, 0);
-  read(from_client, buffer, sizeof(buffer));
-  printf("[server] handshake: received [%s]\n", buffer);
-
+  printf("[server] received handshake, forking off subserver.\n");
+  //if child, end handshake.
+  if(!fork()){
+    return from_client; 
+  }
+  //parent removes the wkp
   remove("waluigi");
   printf("[server] handshake: removed wkp\n");
   return from_client;
@@ -41,14 +42,17 @@ int server_setup() {
 int server_connect(int from_client) {
   int to_client;
   char buffer[HANDSHAKE_BUFFER_SIZE];
-  
+  char ssid[8];
+  sprintf(ssid, "%d", getpid());
+  read(from_client, buffer, sizeof(buffer));
+  printf("[subserver %s] handshake: received [%s]\n", ssid, buffer);
    //connect to client, send message
   to_client = open(buffer, O_WRONLY, 0);
   write(to_client, buffer, sizeof(buffer));
 
   //read for client
   read(from_client, buffer, sizeof(buffer));
-  printf("[server] handshake received: %s\n", buffer);
+  printf("[subserver %s] handshake received: %s\n",ssid, buffer);
 
   return to_client;
 }

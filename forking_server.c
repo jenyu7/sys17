@@ -14,12 +14,10 @@ static void sighandler(int signo) {
 
 int main() {
   int from_client;
-  char buf[BUFFER_SIZE];
-  memset(buf, 0, BUFFER_SIZE);
-  
+  int parent = getpid();
   while ( 1 ) {
     from_client = server_setup();
-    if ( !fork() ) {
+    if (getpid() != parent) {
       subserver(from_client);
     }
   }
@@ -28,11 +26,14 @@ int main() {
 
 void subserver(int from_client) {
   int to_client = server_connect(from_client);
+  char buf[BUFFER_SIZE];
+  memset(buf, 0, BUFFER_SIZE);
   while ( read(from_client, buf, sizeof(buf)) ) {
     printf("Received from client: %s\n", buf);
     process(buf);
     write(to_client, buf, sizeof(buf));
   }
+  exit(0);
 }
 
 void process(char * s) {
